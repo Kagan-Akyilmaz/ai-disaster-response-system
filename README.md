@@ -1,159 +1,179 @@
-# 🤖 Otonom AI Agent — Production-Grade
+# 📡 AfeRota — Kahramanmaraş Afet Koordinasyon Sistemi
 
-Telegram üzerinden kontrol edilen, hedefleri otomatik planlayan ve
-kod üretip çalıştıran modüler AI agent sistemi.
+> **TUA Astro Hackathon 2026 | Samsun Ondokuz Mayıs Üniversitesi | 28-29 Mart**
 
----
-
-## 📁 Proje Yapısı
-
-```
-ai_agent/
-├── main.py                 ← Giriş noktası
-├── config.py               ← Merkezi konfigürasyon
-├── state.py                ← Thread-safe durum makinesi
-├── ai_client.py            ← OpenAI wrapper + format zorlama
-├── planner.py              ← Hedefi görevlere böler
-├── worker.py               ← Dosya yazar + komut çalıştırır
-├── validator.py            ← Test + Review (birleşik doğrulama)
-├── controller.py           ← Ana yürütme motoru (execution engine)
-├── telegram_interface.py   ← Telegram bot + komut yönlendirme
-├── web_viewer.py           ← Flask log viewer
-├── requirements.txt
-├── .env.example
-└── utils/
-    ├── __init__.py
-    ├── logger.py           ← RotatingFileHandler tabanlı loglama
-    └── helpers.py          ← Yardımcı fonksiyonlar
-```
+**AfeRota**, afet anında kurtarma ekiplerini en hızlı ve en güvenli şekilde afet bölgelerine yönlendiren, yapay zeka destekli gerçek zamanlı bir koordinasyon sistemidir.
 
 ---
 
-## 🚀 Kurulum
+## 🚀 Özellikler
 
-### 1. Bağımlılıkları kur
-```bash
-pip install -r requirements.txt
-```
+### 🗺️ Harita Sistemi
+- 35 afet bölgesi Kahramanmaraş geneline yayılmış, numaralı pinler
+- 6 koordinasyon merkezi (AFAD, Kızılay, AKUT) kare ikonlar
+- OpenStreetMap + Esri uydu görüntüsü toggle
 
-### 2. API anahtarlarını ayarla
+### 🛣️ Akıllı Rota Sistemi
+- **Merkez → Afet → Merkez** rota mantığı (gidiş kalın, dönüş kesik çizgi)
+- OSRM ile gerçek yol rotası
+- Kapalı yol algılama → otomatik alternatif rota
+- Her rota üzerinde km ve dakika etiketi
+- Her merkez için ayrı "Hesapla" butonu
 
-`config.py` içinde direkt ayarla veya ortam değişkeni kullan:
+### 🤖 AI Öncelik Motoru
+- Mahsur sayısı × Şiddet × Afet tipi × Isı sinyali formülü
+- En kritik 10 afeti Türkçe sebep açıklamasıyla sıralar
+- Otomatik harita zoom'u
 
-```bash
-export OPENAI_API_KEY="sk-proj-..."
-export TELEGRAM_TOKEN="123456789:AAF..."
-```
+### 📡 Gerçek Veri Modu
+- **SIM / GERÇEK** toggle butonu
+- AFAD Deprem API + Kandilli Rasathanesi entegrasyonu
+- Son 24 saatin depremlerini Türkiye genelinde gösterir
+- Nominatim ile tıklanan noktanın gerçek Türkçe adresi
+- 81 il AFAD müdürlüğü, 30 il Kızılay şubesi, 8 AKUT bölge ekibi
 
-Ya da `.env` dosyası oluştur ve python-dotenv kullan:
-```bash
-cp .env.example .env
-# .env dosyasını düzenle
-pip install python-dotenv
-```
-
-Sonra `main.py` başına ekle:
-```python
-from dotenv import load_dotenv
-load_dotenv()
-```
-
-### 3. Çalıştır
-```bash
-python main.py
-```
-
----
-
-## 📱 Telegram Komutları
+### 📱 Telegram Entegrasyonu
+Saha görevlisi telefondan komut yazar → harita 5 saniyede güncellenir
 
 | Komut | Açıklama |
 |-------|----------|
-| `/start` | Botu başlat, komutları göster |
-| `/hedef <açıklama>` | Yeni proje başlat |
-| `/devam` | Duraklatılmış işi devam ettir |
-| `/dur` | İşi duraklat |
-| `/iptal` | Projeyi iptal et |
-| `/durum` | Mevcut durumu göster |
-| `/yardim` | Yardım mesajı |
+| `/liste` | Tüm aktif afet bölgelerini göster |
+| `/kritikler` | Sadece kritik bölgeler |
+| `/ozet` | Genel istatistik |
+| `/merkez afad1` | Merkez görevleri |
+| `/cikar 1` | Bölge çıkar, liste kayar |
+| `/cikar 1 5 12` | Çoklu çıkarma |
+| `/tamamlandi 3` | Kurtarma bitti |
+| `/ekip_gonder 5 afad1` | Ekip gönderildi |
+| `/durum_guncelle 1 mahsur 20` | Mahsur güncelle |
+| `/afet isim 30 Kritik` | Yeni afet ekle |
+| `/sifirla` | 35 afete döndür |
 
-### Örnek kullanım:
+### 🏥 Altyapı Katmanları
+- Hastaneler (OpenStreetMap Overpass API)
+- Helikopter iniş alanları
+- İtfaiye istasyonları
+- Akaryakıt istasyonları
+- Güvenli toplanma alanları (kapasite bilgisi)
+
+### 🔬 Analiz Katmanları
+- Isı haritası (enkaz altı canlı ısı sinyalleri)
+- Siamese Net analizi (önce/sonra hasar tespiti)
+- Afet yoğunluk haritası (risk skoru renk skalası)
+- Riskli binalar
+- Kapalı yollar (OSRM ile gerçek sokak)
+- Trafik yoğunluk haritası
+
+---
+
+## 🛠️ Kurulum
+
+### Gereksinimler
 ```
-/hedef Flask ile basit bir REST API yaz, /users endpoint'i olsun
+Python 3.8+
+Flask
+requests
+pyTelegramBotAPI
+```
+
+### Kurulum Adımları
+
+```bash
+# 1. Repoyu klonla
+git clone https://github.com/kullanici-adi/aferota.git
+cd aferota
+
+# 2. Bağımlılıkları yükle
+pip install flask requests pyTelegramBotAPI flask-cors
+
+# 3. Telegram token'ı ekle
+# telegram_hackathon.py dosyasını aç, TELEGRAM_TOKEN değişkenini düzenle
+
+# 4. Sistemi başlat
+```
+
+### Çalıştırma
+
+**Terminal 1 — Harita:**
+```bash
+python app.py
+```
+
+**Terminal 2 — Telegram Bot:**
+```bash
+python telegram_hackathon.py
+```
+
+Tarayıcıda `localhost:5000` aç.
+
+---
+
+## 📁 Dosya Yapısı
+
+```
+aferota/
+├── app.py                  # Flask backend, tüm API endpoint'leri
+├── telegram_hackathon.py   # Telegram bot komutları
+├── agent_bridge.py         # Opsiyonel agent köprüsü (port 5001)
+├── afetler.json            # Dinamik afet verisi
+├── afetler_backup.json     # Yedek (sıfırlama için)
+├── requirements.txt
+└── templates/
+    └── index.html          # Harita arayüzü
 ```
 
 ---
 
-## 🏗 Mimari
+## 🔌 API Endpoint'leri
 
-### Veri Akışı
-
-```
-Telegram Input
-     │
-     ▼
-telegram_interface.py   ← Komut yönlendirme, chat_id doğrulama
-     │
-     ▼
-controller.py           ← Proje başlatma + görev döngüsü
-     │
-     ├─► planner.py     ← Hedefi 2-8 adıma böl
-     │
-     ├─► ai_client.py   ← OpenAI çağrısı, FORMAT zorlama (retry)
-     │
-     ├─► worker.py      ← Dosya yaz, komut çalıştır (güvenli)
-     │
-     └─► validator.py   ← Test (hata tespiti) + Fix (otomatik düzeltme) + Review (onay)
-          │
-          ▼
-     state.py           ← Thread-safe durum yönetimi (singleton)
-          │
-          ▼
-     Telegram Output
-```
-
-### Güvenlik Katmanları
-
-1. **Komut Engelleme** — `rm -rf`, `format`, `shutdown` vb. engellenir
-2. **Timeout** — Her komut max 30 saniye çalışır
-3. **Retry Limiti** — AI çağrısı ve komut düzeltme max 5 deneme
-4. **Step Limiti** — 30 adım sonra kullanıcı onayı istenir
-5. **Path Traversal Koruması** — Dosyalar sadece proje dizinine yazılır
-6. **Thread-Safe State** — RLock ile korunan durum nesnesi
-
-### AI Çıktı Formatı (ZORUNLU)
-
-```
-FILE: dosyaadi.py
-KOD:
-<python kodu>
-END_FILE
-
-CMD: python dosyaadi.py
-
-AÇIKLAMA: Ne yaptığını anlat
-```
-
-Format uyumsuzluğunda `MAX_RETRIES` kadar otomatik yeniden deneme yapılır.
+| Endpoint | Metod | Açıklama |
+|----------|-------|----------|
+| `/api/afetler` | GET | Tüm afet bölgeleri |
+| `/api/merkezler` | GET | 6 koordinasyon merkezi |
+| `/api/atamalar` | GET | Merkez-afet atamaları |
+| `/api/afet_cikar/<id>` | POST | Afet sil |
+| `/api/afet_ekle` | POST | Yeni afet ekle |
+| `/api/afetleri_sifirla` | POST | Yedekten sıfırla |
+| `/api/gercek_depremler` | GET | AFAD + Kandilli API |
+| `/api/afad_merkezler_tr` | GET | 81 il AFAD koordinatları |
+| `/api/kizilay_tr` | GET | 30 il Kızılay şubeleri |
+| `/api/akut_tr` | GET | 8 AKUT bölge ekibi |
+| `/api/hastaneler` | GET | Hastaneler (OSM) |
+| `/api/helikopter` | GET | Helipad noktaları |
+| `/api/itfaiye` | GET | İtfaiye istasyonları |
+| `/api/akaryakit` | GET | Akaryakıt istasyonları |
+| `/api/ai_oncelik` | GET | AI öncelik sıralaması |
+| `/api/kapali` | GET | Kapalı yollar |
+| `/api/isi` | GET | Isı haritası verisi |
+| `/api/riskli` | GET | Riskli binalar |
+| `/api/siamese` | GET | Siamese analiz |
 
 ---
 
-## 🌐 Web Panel
+## 🌍 Veri Kaynakları
 
-Çalışırken `http://localhost:5000` adresinden log viewer'a erişebilirsin.
-
-- Her 10 saniyede otomatik yenilenir
-- Son 4000 karakter log gösterilir
-- `/api/status` endpoint'i JSON durum döndürür
+| Kaynak | Kullanım | Ücret |
+|--------|----------|-------|
+| [AFAD Deprem API](https://deprem.afad.gov.tr/apiv2) | Gerçek zamanlı deprem | Ücretsiz |
+| [Kandilli Rasathanesi](http://www.koeri.boun.edu.tr) | Deprem fallback | Ücretsiz |
+| [OpenStreetMap Overpass](https://overpass-api.de) | Hastane, itfaiye, yakıt | Ücretsiz |
+| [Nominatim](https://nominatim.openstreetmap.org) | Adres çözümleme | Ücretsiz |
+| [OSRM](https://router.project-osrm.org) | Gerçek yol rotası | Ücretsiz |
+| [Esri World Imagery](https://www.esri.com) | Uydu görüntüsü | Ücretsiz |
+| [Türksat](https://www.turksat.com.tr) | Uydu altyapısı ve haberleşme desteği | Kurumsal |
+| [İMECE Uydusu](https://www.tubitak.gov.tr/imece) | Yüksek çözünürlüklü yerli uydu görüntüsü | RASAT/İMECE |
 
 ---
 
-## ⚙️ Konfigürasyon (config.py)
+## 🏆 Hackathon
 
-| Değişken | Varsayılan | Açıklama |
-|----------|-----------|----------|
-| `MODEL` | `gpt-4o-mini` | Kullanılacak OpenAI modeli |
-| `STEP_LIMIT` | `30` | Onay olmadan max adım |
-| `LOOP_DELAY` | `8` | Adımlar arası bekleme (sn) |
-| `MAX_RETRIES` | `5` | Retry limiti |
-| `CMD_TIMEOUT` | `30` | Komut timeout (sn) |
+**TUA Astro Hackathon 2026**  
+Samsun Ondokuz Mayıs Üniversitesi  
+28-29 Mart 2026  
+Konu: Uydu görüntüleri + AI ile kurtarma koordinasyonu
+
+---
+
+## 📄 Lisans
+
+MIT License — Özgürce kullanabilirsiniz.
